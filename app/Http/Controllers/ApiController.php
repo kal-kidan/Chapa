@@ -19,9 +19,13 @@ class ApiController extends Controller
         </soap:Envelope>";
         $response = Http::withHeaders(['Content-Type' => 'text/xml; charset=utf-8'])->send('POST', 'http://www.dataaccess.com/webservicesserver/numberconversion.wso', [
             'body' => $xml,
-        ]);
-        $body =  $response->body();  
-        return "your age is $body"; 
+        ]);  
+        $response = preg_replace("/(<\/?)(\w+):([^>]*>)/", "$1$2$3", $response);
+        $xml = simplexml_load_string($response);
+        $json = json_encode($xml);
+        $array = json_decode($json, true);
+        $age = $array['soapBody']['mNumberToWordsResponse']['mNumberToWordsResult']; 
+        return ["message"=>"your age is $age", "status"=>true]; 
      } catch (Exception $e) {
          echo $e->getMessage();
      }
